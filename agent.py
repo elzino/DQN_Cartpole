@@ -40,6 +40,19 @@ class CnnQLearning(nn.Module):
         return self.head(x.view(x.size(0), -1))
 
 
+class DnnQLearning(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.linear1 = nn.Linear(4, 30)
+        self.linear2 = nn.Linear(30, 15)
+        self.head = nn.Linear(15, 2)
+
+    def forward(self, x):
+        x = F.relu((self.linear1(x)))
+        x = F.relu(self.linear2(x))
+        return self.head(x)
+
+
 Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward'))
 
 

@@ -2,20 +2,23 @@ import argparse
 
 
 defaults_train = {
+    'mode': 'dnn',
     "load_path": None,
     "num_episode": 1000,
     "batch_size": 128,
     "gamma": 0.999,
     "eps_start": 0.9,
     "eps_end": 0.05,
-    "eps_decay": 0.01,
+    "eps_decay": 0.005,
     "target_update": 10,
-    "replay_memory_capacity": 3000,
+    "replay_memory_capacity": 5000,
 }
 
 
 def check_args_train(args):
     """Check commandline argument validity."""
+    assert args.mode == 'cnn' or args.mode == 'dnn',  "Mode must be 'cnn' or 'dnn'"
+
     assert args.num_episode >= 1, "Number of episode must be a positive integer"
 
     assert args.batch_size >= 1, "Size of batch must be a positive integer"
@@ -37,6 +40,9 @@ def get_args_train():
     """Parse arguments from commandline."""
     parser = argparse.ArgumentParser(
         description="Pytorch Implementation of DQN about Cart-Pole Problem")
+
+    parser.add_argument("-m", "--mode",
+                        type=str, default=defaults_train['mode'], help="dnn or cnn")
 
     parser.add_argument("-l", "--load_path",
                         type=str, default=defaults_train['load_path'], help="Path of model file")

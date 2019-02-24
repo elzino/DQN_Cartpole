@@ -6,7 +6,7 @@ from agent import *
 from env import *
 
 
-def main(load_path, num_episode):
+def main_cnn(load_path, num_episode):
     load_path = str(load_path)
     num_episode = int(num_episode)
 
@@ -16,8 +16,7 @@ def main(load_path, num_episode):
     _, _, screen_height, screen_width = init_screen.shape
 
     policy_net = CnnQLearning(screen_height, screen_width).to(device)
-    if load_path is not None:
-        policy_net.load_state_dict(torch.load(load_path))
+    policy_net.load_state_dict(torch.load(load_path))
 
     steps_done = 0
     rewards = []
@@ -57,5 +56,46 @@ def main(load_path, num_episode):
     env.close()
 
 
+def main_dnn(load_path, num_episode):
+    load_path = str(load_path)
+    num_episode = int(num_episode)
+
+    env = gym.make('CartPole-v0').unwrapped
+
+    policy_net = DnnQLearning().to(device)
+    policy_net.load_state_dict(torch.load(load_path))
+
+    steps_done = 0
+    rewards = []
+
+    for i_episode in range(num_episode):
+        state = env.reset()
+        state = torch.tensor([state], dtype=torch.float32, device=device)
+        for t in count():
+            env.render()
+            # Select and perform an action
+            action = select_action(policy_net, state, steps_done, eps_start=0, eps_end=0, eps_decay=0)
+            next_state, _, done, _ = env.step(action.item())  # TODO env step github code 보기
+            state = torch.tensor([next_state], dtype=torch.float32, device=device)
+
+            steps_done += 1
+
+            if done:
+                print('episode: {} --- reward: {}'.format(i_episode, t))
+                rewards.append(t)
+                break
+
+    average = sum(rewards) / float(len(rewards))
+    print('average reward: {}'.format(average))
+    print('Complete')
+    env.render()
+    env.close()
+
+
 if __name__ == '__main__':
-    main(*sys.argv[1:])
+    if sys.argv[1] == 'dnn':
+        main_dnn(*sys.argv[2:])
+    elif sys.argv[1] == 'cnn':
+        main_cnn(*sys.argv[2:])
+    else:
+        print('select mode between "cnn" or "dnn"')
