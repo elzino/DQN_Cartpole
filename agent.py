@@ -65,7 +65,7 @@ class ReplayMemory(object):
 def select_action(policy_net, state, steps_done, eps_start=0.9, eps_end=0.05, eps_decay=0.005):
     sample = random.random()
     eps_threshold = eps_end + (eps_start - eps_end) * math.exp(-1. * steps_done * eps_decay)
-    if sample > eps_threshold:
+    if sample >= eps_threshold:
         with torch.no_grad():
             # t.max(1) will return largest column value of each row.
             # second column on max result is index of where max element was

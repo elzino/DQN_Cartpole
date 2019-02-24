@@ -1,4 +1,5 @@
 import torch
+import torch.optim as optim
 import gym
 
 import matplotlib
@@ -8,18 +9,10 @@ from itertools import count
 
 from env import *
 from agent import *
-import torch.optim as optim
+from arguments import get_args_train
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-BATCHSIZE = 128
-GAMMA = 0.999
-EPS_START = 0.9
-EPS_END = 0.05
-EPS_DECAY = 0.005
-TARGET_UPDATE = 10
-REPLAY_MEMORY_CAPACITY = 3000
 
 
 def plot_duration(episode_durations):
@@ -79,7 +72,7 @@ def optimize_model(batch_size, memory, policy_net, target_net, gamma):
     loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.view(-1, 1))
 
     # Optimize the model
-    optimizer = optim.RMSprop(policy_net.parameters())
+    optimizer = optim.Adam(policy_net.parameters())
     optimizer.zero_grad()
     loss.backward()
     for param in policy_net.parameters():
@@ -87,7 +80,9 @@ def optimize_model(batch_size, memory, policy_net, target_net, gamma):
     optimizer.step()
 
 
-def main():
+def main(load_path=None, num_episode=1000, batch_size=128, gamma=0.999, eps_start=0.9,
+         eps_end=0.05, eps_decay=0.02, target_update=10, replay_memory_capacity=3000):
+
     # Get screen size so that we can initialize layers correctly based on shape
     # returned from AI gym. Typical dimensions at this point are close to 3x40x90
     # which is the result of a clamped and down-scaled render buffer in get_screen()
@@ -97,24 +92,25 @@ def main():
     _, _, screen_height, screen_width = init_screen.shape
 
     policy_net = CnnQLearning(screen_height, screen_width).to(device)
+    if load_path is not None:
+        policy_net.load_state_dict(torch.load(load_path))
     fixed_target_net = CnnQLearning(screen_height, screen_width).to(device)
     fixed_target_net.load_state_dict(policy_net.state_dict())
     fixed_target_net.eval()
 
-    memory = ReplayMemory(REPLAY_MEMORY_CAPACITY)
+    memory = ReplayMemory(replay_memory_capacity)
 
     steps_done = 0
     episode_durations = []
-    num_episodes = 600
 
-    for i_episode in range(num_episodes):
+    for i_episode in range(num_episode):
         env.reset()
         last_screen = get_screen(env)
         current_screen = get_screen(env)
         state = current_screen - last_screen
         for t in count():
             # Select and perform an action
-            action = select_action(policy_net, state, steps_done, eps_start=EPS_START, eps_end=EPS_END, eps_decay=EPS_END)
+            action = select_action(policy_net, state, steps_done, eps_start=eps_start, eps_end=eps_end, eps_decay=eps_decay)
             _, reward, done, _ = env.step(action.item())  # TODO env step github code 보기
             reward = torch.tensor([reward], device=device) # TODO [] 왜 감싸는지 확인하기
 
@@ -134,19 +130,19 @@ def main():
             state = next_state
             steps_done += 1
 
-            optimize_model(batch_size=BATCHSIZE, memory=memory, policy_net=policy_net, target_net=fixed_target_net, gamma=GAMMA)
+            optimize_model(batch_size=batch_size, memory=memory, policy_net=policy_net, target_net=fixed_target_net, gamma=gamma)
             if done:
                 episode_durations.append(t + 1)
                 plot_duration(episode_durations)
-                print(i_episode)
+                print('episode: {} --- reward: {}'.format(i_episode, t))
                 break
 
         # Update the target network, copying all weights and biases in DQN
-        if i_episode % TARGET_UPDATE == 0:
+        if i_episode % target_update == 0:
             fixed_target_net.load_state_dict(policy_net.state_dict())
 
-        if i_episode % 100 == 0:
-            torch.save(policy_net.state_dict(), './model{}.pt'.format(i_episode))
+        if (i_episode + 1) % 100 == 0:
+            torch.save(policy_net.state_dict(), './model{}.pt'.format(i_episode + 1))
 
     print('Complete')
     env.render()
@@ -156,4 +152,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(**vars(get_args_train()))

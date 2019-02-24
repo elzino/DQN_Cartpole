@@ -11,13 +11,15 @@ import matplotlib.pyplot as plt
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 resize = T.Compose([T.ToPILImage(),
-                    T.Resize(40, interpolation=Image.CUBIC),
+                    T.Resize((40, 90), interpolation=Image.CUBIC),
                     T.ToTensor()])
+
 
 def get_cart_location(env, screen_width):
     x_location_range = env.x_threshold * 2
     scale = screen_width / x_location_range
     return int(env.state[0] * scale + screen_width / 2.0)  # MIDDLE OF CART
+
 
 def get_screen(env):
     # Returned screen requested by gym is 400x600x3, but is sometimes larger
