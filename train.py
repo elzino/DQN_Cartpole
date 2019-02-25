@@ -104,6 +104,7 @@ def main_cnn(load_path=None, num_episode=1000, batch_size=128, gamma=0.999, eps_
     optimizer = optim.SGD(policy_net.parameters(), 0.1)
     scheduler = optim.lr_scheduler.StepLR(optimizer, 100, 0.5)
 
+    max_reward = 0
     steps_done = 0
     episode_durations = []
 
@@ -149,12 +150,15 @@ def main_cnn(load_path=None, num_episode=1000, batch_size=128, gamma=0.999, eps_
         if i_episode % target_update == 0:
             fixed_target_net.load_state_dict(policy_net.state_dict())
 
+        if i_episode + 1 % 300 == 0:
+            plt.savefig('./models/cnn/{}_graph_{}.png'.format(now, i_episode+1))
+
     print('Complete')
     env.render()
     env.close()
     plt.ioff()
     plt.show()
-    plt.savefig('./models/cnn/{}_graph.png'.format(now))
+    plt.close()
 
 
 def main_dnn(load_path=None, num_episode=1000, batch_size=128, gamma=0.999, eps_start=0.9,
@@ -220,12 +224,15 @@ def main_dnn(load_path=None, num_episode=1000, batch_size=128, gamma=0.999, eps_
         if i_episode % target_update == 0:
             fixed_target_net.load_state_dict(policy_net.state_dict())
 
+        if i_episode + 1 % 300 == 0:
+            plt.savefig('./models/dnn/{}_graph_{}.png'.format(now, i_episode+1))
+
+
     print('Complete')
     env.render()
     env.close()
     plt.ioff()
     plt.show()
-    plt.savefig('./models/dnn/{}_graph.png'.format(now))
 
 
 if __name__ == '__main__':
