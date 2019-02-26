@@ -1,10 +1,10 @@
-#DQN Cartpole
+# DQN Cartpole
 
 
 Pytorch implementation of this [link](https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html)<br />
 And I added another network using Multi-layer Perception by using state from openai gym directly
 
-##Requirements
+## Requirements
 - Python 3.6x or higher 
 - pytorch v1.0.0
 - [gym](https://github.com/openai/gym/)
@@ -13,14 +13,14 @@ And I added another network using Multi-layer Perception by using state from ope
 - matplotlib
 - numpy
 
-##Run
-###Train Model
+## Run
+### Train Model
 ```python train.py [options]```<br/>
 
-###Test Mdoel
+### Test Mdoel
 ```pyton test.py [options]```
 
-##Arguments
+## Arguments
 Every argument is optional, and has a default value defined at arguments.py.
 
 ### Train
@@ -40,9 +40,10 @@ Every argument is optional, and has a default value defined at arguments.py.
 - ```--load_path, -l```: Path of model file. *Default*: ./models/dnn/reward_760.pt
 - ```--num_episode, -e```: Number of episode. *Default*: 5
 
-##Results
-###DNN
-<img src="./models/dnn/dnn_760_test.gif">
+## Results
+### DNN
+<img src="./models/dnn/dnn_760_test.gif" width=500>
 
-###CNN
-<img src="./models/cnn/cnn_287_test.gif">
+### CNN
+<img src="./models/cnn/cnn_287_test.gif" width=500><br/>
+<img src="./models/cnn/02_24_21_16_graph_900.png" width=500>
