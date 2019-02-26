@@ -14,6 +14,12 @@ defaults_train = {
     "replay_memory_capacity": 5000,
 }
 
+defaults_test = {
+    'mode': 'dnn',
+    "load_path": './models/dnn/reward_760.pt',
+    "num_episode": 5,
+}
+
 
 def check_args_train(args):
     """Check commandline argument validity."""
@@ -32,6 +38,15 @@ def check_args_train(args):
     assert args.target_update >= 1, "target_update must be a positive integer"
 
     assert args.replay_memory_capacity >= 1, "replay_memory_capacity must be a non-negative integer"
+
+    return args
+
+
+def check_args_test(args):
+    """Check commandline argument validity."""
+    assert args.mode == 'cnn' or args.mode == 'dnn',  "Mode must be 'cnn' or 'dnn'"
+
+    assert args.num_episode >= 1, "Number of episode must be a positive integer"
 
     return args
 
@@ -75,3 +90,20 @@ def get_args_train():
                         help="Capacity of Replay Memory")
 
     return check_args_train(parser.parse_args())
+
+
+def get_args_test():
+    """Parse arguments from commandline."""
+    parser = argparse.ArgumentParser(
+        description="Pytorch Implementation of DQN about Cart-Pole Problem")
+
+    parser.add_argument("-m", "--mode",
+                        type=str, default=defaults_test['mode'], help="dnn or cnn")
+
+    parser.add_argument("-l", "--load_path",
+                        type=str, default=defaults_test['load_path'], help="Path of model file")
+
+    parser.add_argument("-e", "--num_episode",
+                        type=int, default=defaults_test['num_episode'], help="Number of episode")
+
+    return check_args_test(parser.parse_args())

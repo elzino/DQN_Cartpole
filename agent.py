@@ -43,9 +43,9 @@ class CnnQLearning(nn.Module):
 class DnnQLearning(nn.Module):
     def __init__(self):
         super().__init__()
-        self.linear1 = nn.Linear(4, 30)
-        self.linear2 = nn.Linear(30, 15)
-        self.head = nn.Linear(15, 2)
+        self.linear1 = nn.Linear(4, 10)
+        self.linear2 = nn.Linear(10, 5)
+        self.head = nn.Linear(5, 2)
 
     def forward(self, x):
         x = F.relu((self.linear1(x)))

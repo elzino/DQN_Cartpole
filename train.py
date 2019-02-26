@@ -102,7 +102,7 @@ def main_cnn(load_path=None, num_episode=1000, batch_size=128, gamma=0.999, eps_
 
     memory = ReplayMemory(replay_memory_capacity)
     optimizer = optim.SGD(policy_net.parameters(), 0.1)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, 100, 0.5)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, 200, 0.3)
 
     max_reward = 0
     steps_done = 0
@@ -124,6 +124,9 @@ def main_cnn(load_path=None, num_episode=1000, batch_size=128, gamma=0.999, eps_
             last_screen = current_screen
             current_screen = get_screen(env)
 
+            if t >= 5000:
+                done = True
+
             if not done:
                 next_state = current_screen - last_screen
             else:
@@ -140,9 +143,14 @@ def main_cnn(load_path=None, num_episode=1000, batch_size=128, gamma=0.999, eps_
             if done:
                 episode_durations.append(t + 1)
                 plot_duration(episode_durations)
+
+                if (i_episode + 1) % 500 == 0:
+                    plt.savefig('./models/cnn/{}_graph_{}.png'.format(now, i_episode + 1))
+
                 if max_reward < t:
                     max_reward = t
                     torch.save(policy_net.state_dict(), './models/cnn/{}_reward_{}.pt'.format(now, t))
+
                 print('episode: {} --- reward: {}'.format(i_episode, t))
                 break
 
@@ -150,8 +158,6 @@ def main_cnn(load_path=None, num_episode=1000, batch_size=128, gamma=0.999, eps_
         if i_episode % target_update == 0:
             fixed_target_net.load_state_dict(policy_net.state_dict())
 
-        if i_episode + 1 % 300 == 0:
-            plt.savefig('./models/cnn/{}_graph_{}.png'.format(now, i_episode+1))
 
     print('Complete')
     env.render()
@@ -182,7 +188,7 @@ def main_dnn(load_path=None, num_episode=1000, batch_size=128, gamma=0.999, eps_
     memory = ReplayMemory(replay_memory_capacity)
 
     optimizer = optim.SGD(policy_net.parameters(), 0.1)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, 100, 0.5)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, 200, 0.3)
 
     steps_done = 0
     max_reward = 0
@@ -199,6 +205,9 @@ def main_dnn(load_path=None, num_episode=1000, batch_size=128, gamma=0.999, eps_
             next_state, reward, done, _ = env.step(action.item())
             next_state = torch.tensor([next_state], dtype=torch.float32, device=device)
             reward = torch.tensor([reward], device=device) # TODO [] 왜 감싸는지 확인하기
+
+            if t >= 5000:
+                done = True
 
             if done:
                 next_state = None
@@ -217,6 +226,10 @@ def main_dnn(load_path=None, num_episode=1000, batch_size=128, gamma=0.999, eps_
                 if max_reward < t:
                     max_reward = t
                     torch.save(policy_net.state_dict(), './models/dnn/{}_reward_{}.pt'.format(now, t))
+
+                if (i_episode + 1) % 500 == 0:
+                    plt.savefig('./models/dnn/{}_graph_{}.png'.format(now, i_episode + 1))
+
                 print('episode: {} --- reward: {}'.format(i_episode, t))
                 break
 
@@ -224,8 +237,6 @@ def main_dnn(load_path=None, num_episode=1000, batch_size=128, gamma=0.999, eps_
         if i_episode % target_update == 0:
             fixed_target_net.load_state_dict(policy_net.state_dict())
 
-        if i_episode + 1 % 300 == 0:
-            plt.savefig('./models/dnn/{}_graph_{}.png'.format(now, i_episode+1))
 
 
     print('Complete')

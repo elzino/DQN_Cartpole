@@ -1,9 +1,9 @@
 import gym
-import sys
 from itertools import count
 
 from agent import *
 from env import *
+from arguments import *
 
 
 def main_cnn(load_path, num_episode):
@@ -34,6 +34,9 @@ def main_cnn(load_path, num_episode):
             # Observe new state
             last_screen = current_screen
             current_screen = get_screen(env)
+
+            if t >= 5000:
+                done = True
 
             if not done:
                 next_state = current_screen - last_screen
@@ -80,6 +83,9 @@ def main_dnn(load_path, num_episode):
 
             steps_done += 1
 
+            if t >= 5000:
+                done = True
+
             if done:
                 print('episode: {} --- reward: {}'.format(i_episode, t))
                 rewards.append(t)
@@ -93,9 +99,12 @@ def main_dnn(load_path, num_episode):
 
 
 if __name__ == '__main__':
-    if sys.argv[1] == 'dnn':
-        main_dnn(*sys.argv[2:])
-    elif sys.argv[1] == 'cnn':
-        main_cnn(*sys.argv[2:])
+    args = vars(get_args_test())
+    if args['mode'] == 'dnn':
+        args.pop('mode')
+        main_dnn(**args)
+    elif args['mode'] == 'cnn':
+        args.pop('mode')
+        main_cnn(**args)
     else:
-        print('select mode between "cnn" or "dnn"')
+        print('choose mode among cnn and dnn')
