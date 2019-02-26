@@ -1,7 +1,7 @@
 # DQN Cartpole
 
 Pytorch implementation of this [link](https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html)<br />
-And I added another network using Multi-layer Perception by using states from gym directly.
+And I added Multi-layer Perception network by using states from gym directly.
 
 ## Requirements
 
